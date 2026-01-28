@@ -27,11 +27,22 @@ class ProductUpdate(BaseModel):
 # In-Memory Database
 # ---------------------------
 products_db = [
-    Product(id=1, name="Laptop", price=999.99, category="Electronics", description="High performance laptop"),
-    Product(id=2, name="Mouse", price=29.99, category="Electronics", description="Wireless mouse"),
-    Product(id=3, name="Desk Chair", price=299.99, category="Furniture", description="Ergonomic chair")
+    Product(id=1, name="Laptop Pro 16", price=1999.99, category="Electronics", description="High performance laptop for developers"),
+    Product(id=2, name="Wireless Mouse", price=39.99, category="Electronics", description="Ergonomic wireless mouse"),
+    Product(id=3, name="Ergonomic Desk Chair", price=349.99, category="Furniture", description="Comfortable chair for long work sessions"),
+    Product(id=4, name="Mechanical Keyboard", price=129.99, category="Electronics", description="Mechanical keyboard with RGB lighting"),
+    Product(id=5, name="27'' 4K Monitor", price=499.99, category="Electronics", description="Ultra HD monitor for productivity"),
+    Product(id=6, name="Streaming Subscription – Premium", price=15.99, category="Subscription", description="Access to movies and TV shows in 4K with multiple profiles"),
+    Product(id=7, name="LLM Subscription – Enterprise", price=299.99, category="Subscription", description="Enterprise-grade LLM subscription with SLA"),
+    Product(id=8, name="Cloud Storage 1TB", price=9.99, category="Cloud", description="1TB cloud storage billed monthly"),
+    Product(id=9, name="Cloud Compute Credits", price=199.99, category="Cloud", description="Monthly cloud compute credits"),
+    Product(id=10, name="API Access Plan", price=99.99, category="Software", description="Premium API access with higher rate limits"),
+    Product(id=11, name="Cybersecurity Monitoring", price=149.99, category="Service", description="24/7 cybersecurity monitoring service"),
+    Product(id=12, name="Data Analytics Dashboard", price=79.99, category="Software", description="Advanced analytics and reporting dashboard"),
+    Product(id=13, name="AI Model Fine-Tuning Service", price=499.99, category="Service", description="Custom fine-tuning service for AI models")
 ]
-next_id = 4
+
+next_id = 14
 
 # ---------------------------
 # Endpoints
