@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 from fastmcp import FastMCP
+from mcp.types import Tool
 
 app = FastAPI(title="Productos API", version="1.0.0")
 
@@ -104,7 +105,86 @@ async def root():
 # ---------------------------
 # MCP Server Wrapper
 # ---------------------------
+
 mcp = FastMCP.from_fastapi(app)
+
+# ---------------------------
+# Explicit MCP Standard Method
+# ---------------------------
+
+@mcp.list_tools()
+async def list_tools() -> List[Tool]:
+    """
+    Standard MCP tools/list method.
+    """
+    return [
+        Tool(
+            name="list_products",
+            description="List all products with optional filtering by category and max_price",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "category": {"type": "string"},
+                    "max_price": {"type": "number"}
+                }
+            }
+        ),
+        Tool(
+            name="get_product",
+            description="Get a product by ID",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "integer"}
+                },
+                "required": ["product_id"]
+            }
+        ),
+        Tool(
+            name="create_product",
+            description="Create a new product",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "price": {"type": "number"},
+                    "category": {"type": "string"},
+                    "description": {"type": "string"}
+                },
+                "required": ["name", "price", "category"]
+            }
+        ),
+        Tool(
+            name="update_product",
+            description="Update an existing product",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "integer"},
+                    "name": {"type": "string"},
+                    "price": {"type": "number"},
+                    "category": {"type": "string"},
+                    "description": {"type": "string"}
+                },
+                "required": ["product_id"]
+            }
+        ),
+        Tool(
+            name="delete_product",
+            description="Delete a product by ID",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "product_id": {"type": "integer"}
+                },
+                "required": ["product_id"]
+            }
+        )
+    ]
+
+# ---------------------------
+# Run Server
+# ---------------------------
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
