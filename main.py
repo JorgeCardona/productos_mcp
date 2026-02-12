@@ -183,6 +183,30 @@ async def list_tools() -> List[Tool]:
     ]
 
 # ---------------------------
+# Native MCP Tools
+# ---------------------------
+
+@mcp.tool()
+async def count_products() -> dict:
+    """
+    Devuelve la cantidad total de productos en el sistema.
+    """
+    return {
+        "total_products": len(products_db)
+    }
+
+
+@mcp.tool()
+async def get_categories() -> dict:
+    """
+    Devuelve la lista única de categorías disponibles.
+    """
+    categories = sorted({p.category for p in products_db})
+    return {
+        "categories": categories
+    }
+
+# ---------------------------
 # Run Server
 # ---------------------------
 
