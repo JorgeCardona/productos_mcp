@@ -197,10 +197,10 @@ import httpx
 response = httpx.post(
     "https://productos-mcp.onrender.com/products/create_product",
     json={
-        "name": "Gaming Headset",
-        "price": 89.99,
-        "category": "Electronics",
-        "description": "Wireless gaming headset with noise cancellation"
+        "name": "AI Assistant Subscription – Professional",
+        "price": 24.99,
+        "category": "Subscription",
+        "description": "Monthly AI assistant subscription with advanced models, document analysis, and priority access"
     },
 )
 
