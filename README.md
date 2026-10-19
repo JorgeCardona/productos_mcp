@@ -231,6 +231,7 @@ print("Respuesta REST:", response.json())
 ### Filtrar por categoría
 
 ```
+import json
 import requests
 
 BASE_URL = "https://productos-mcp.onrender.com"
@@ -240,8 +241,30 @@ response = requests.get(
     params={"category": "Electronics"},
 )
 
-print("Status Code:", response.status_code)
-print("Respuesta REST:", response.json())
+print("🛍️  CATÁLOGO DE PRODUCTOS")
+print("=" * 50)
+print(f"📡 Estado HTTP: {response.status_code}")
+print("📂 Categoría: Electronics")
+print("=" * 50)
+
+if response.ok:
+    productos = response.json()
+
+    if productos:
+        for producto in productos:
+            print(f"\n📦 Producto #{producto['id']}")
+            print(f"   🏷️  Nombre:       {producto['name']}")
+            print(f"   💰 Precio:       ${producto['price']:,.2f}")
+            print(f"   📂 Categoría:    {producto['category']}")
+            print(f"   📝 Descripción:  {producto.get('description') or 'Sin descripción'}")
+            print("-" * 50)
+
+        print(f"\n✅ Total de productos encontrados: {len(productos)}")
+    else:
+        print("⚠️ No se encontraron productos en esta categoría.")
+else:
+    print("❌ Error al consultar la API:")
+    print(json.dumps(response.json(), indent=2, ensure_ascii=False))
 ```
 
 ### Filtrar por precio máximo
@@ -256,9 +279,36 @@ response = requests.get(
     params={"max_price": 100.0},
 )
 
-print("Status Code:", response.status_code)
-print("Respuesta REST:", response.json())
-```
+print("🛍️  CATÁLOGO DE PRODUCTOS")
+print("=" * 55)
+print(f"📡 Estado HTTP: {response.status_code}")
+print("💰 Filtro: Precio máximo de $100.00")
+print("=" * 55)
+
+if response.ok:
+    productos = response.json()
+
+    if productos:
+        for producto in productos:
+            print(f"\n📦 Producto #{producto['id']}")
+            print(f"   🏷️  Nombre:      {producto['name']}")
+            print(f"   💵 Precio:      ${producto['price']:,.2f}")
+            print(f"   📂 Categoría:   {producto['category']}")
+            print(
+                f"   📝 Descripción: "
+                f"{producto.get('description') or 'Sin descripción'}"
+            )
+            print("-" * 55)
+
+        print(f"\n✅ Total de productos encontrados: {len(productos)}")
+    else:
+        print("\n⚠️ No se encontraron productos por debajo del precio indicado.")
+else:
+    print("\n❌ Error al consultar la API:")
+    try:
+        print(response.json())
+    except requests.exceptions.JSONDecodeError:
+        print(response.text)
 
 ---
 
