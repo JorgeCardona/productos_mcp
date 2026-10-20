@@ -1,47 +1,51 @@
 # Productos API WEB MCP 📦
 
-Microservicio de gestión de productos híbrido construido con **FastAPI** y **FastMCP** (Model Context Protocol). Proporciona tanto una **API REST** para integración web estándar como un servidor **MCP** con transporte HTTP para asistentes de IA y consumo programático desde entornos como JupyterLab.
+Microservicio de gestión de productos híbrido construido con **FastAPI** y **FastMCP** (Model Context Protocol). Proporciona tanto una **API REST** estandarizada con rutas RESTful como un servidor **MCP** con transporte HTTP para asistentes de IA y consumo programático desde entornos como JupyterLab.
 
 ---
 
 ## 🚀 Características Principales
 
-- **Arquitectura Híbrida**: Sirve endpoints REST (`/docs`) y un servidor MCP (`/mcp`) en el mismo puerto y aplicación FastAPI.
-- **Validación Estricta y Seguridad**:
-  - Modelos **Pydantic** con `strict=True` para prevenir coerciones indeseadas de datos.
-  - Validación dinámica de tipos en tiempo de ejecución con `@typechecked` (`typeguard`).
-  - Validación de campos mediante `Field`, incluyendo longitudes máximas, precios no negativos y restricciones de identificadores.
-  - Manejo de errores para productos inexistentes y datos inválidos.
-- **Herramientas Disponibles**:
-  - Consulta: `list_products`, `get_product`.
-  - Gestión: `create_product`, `update_product`, `delete_product`.
+* **Arquitectura Híbrida**: Sirve endpoints REST (`/docs`) y un servidor MCP (`/mcp`) en el mismo puerto y aplicación FastAPI.
+* **Validación Estricta y Seguridad**:
+* Modelos **Pydantic** con `strict=True` para prevenir coerciones indeseadas de datos.
+* Validación dinámica de tipos en tiempo de ejecución con `@typechecked` (`typeguard`).
+* Validación de campos mediante `Field`, incluyendo longitudes máximas, precios no negativos y restricciones de identificadores.
+* Manejo de errores para productos inexistentes y datos inválidos.
+
+
+* **Herramientas Disponibles**:
+* Consulta: `list_products`, `get_product`.
+* Gestión: `create_product`, `update_product`, `delete_product`.
+
+
 
 ---
 
 ## 📡 Endpoints del Servidor
 
-- **Documentación Swagger / REST**: https://productos-mcp.onrender.com/docs
-- **Servidor MCP**: https://productos-mcp.onrender.com/mcp
+* **Documentación Swagger / REST**: [https://productos-mcp.onrender.com/docs](https://productos-mcp.onrender.com/docs)
+* **Servidor MCP**: [https://productos-mcp.onrender.com/mcp](https://productos-mcp.onrender.com/mcp)
 
 ---
 
 ## 🛠️ Herramientas MCP / Endpoints REST
 
-| Herramienta | Tipo | Descripción | Parámetros |
-| --- | --- | --- | --- |
-| `list_products` | Consulta | Lista productos y permite filtrar por categoría y precio máximo | `category: str`, `max_price: float` |
-| `get_product` | Consulta | Obtiene un producto por su ID | `product_id: int` |
-| `create_product` | Gestión | Crea un producto y asigna un ID automáticamente | `name: str`, `price: float`, `category: str`, `description: str` opcional |
-| `update_product` | Gestión | Actualiza los campos proporcionados de un producto existente | `product_id: int`, `name: str`, `price: float`, `category: str`, `description: str` opcionales |
-| `delete_product` | Gestión | Elimina un producto existente por su ID | `product_id: int` |
+| Herramienta / Operación | Método REST | Ruta REST | Descripción | Parámetros principales |
+| --- | --- | --- | --- | --- |
+| `list_products` | `GET` | `/products` | Lista productos y permite filtrar por categoría y precio máximo | `category: str`, `max_price: float` |
+| `get_product` | `GET` | `/products/{product_id}` | Obtiene un producto por su ID (ej. ID 7 o 13) | `product_id: int` |
+| `create_product` | `POST` | `/products` | Crea un producto y asigna un ID automáticamente | `name: str`, `price: float`, `category: str`, `description: str` (opcional) |
+| `update_product` | `PATCH` | `/products/{product_id}` | Actualiza los campos proporcionados de un producto existente | `product_id: int`, campos opcionales (`name`, `price`, `category`, `description`) |
+| `delete_product` | `DELETE` | `/products/{product_id}` | Elimina un producto existente por su ID (ej. ID 13) | `product_id: int` |
 
 ---
 
 ## 💻 Consumo desde JupyterLab (Python)
 
-### 1\. LISTAR TOOLS
+### 1. Listar Herramientas (Tools) Disponibles
 
-```
+```python
 from mcp.client.streamable_http import streamable_http_client
 from mcp.client.session import ClientSession
 
@@ -64,15 +68,16 @@ async def listar_tools():
 
 # Ejecutar en JupyterLab
 await listar_tools()
+
 ```
 
 ---
 
-### 2\. Consumo del Servidor MCP (`mcp` \+ `nest_asyncio`)
+### 2. Consumo del Servidor MCP (`mcp` + `asyncio`)
 
-El siguiente ejemplo consulta un producto por ID y después lista todos los productos disponibles.
+El siguiente ejemplo consulta un producto por ID (como el producto 7) y después lista todos los productos disponibles.
 
-```
+```python
 import json
 from mcp.client.streamable_http import streamable_http_client
 from mcp.client.session import ClientSession
@@ -87,13 +92,13 @@ async def consumir_mcp_productos():
             await session.initialize()
 
             # -------------------------------------------------
-            # 1. OBTENER UN PRODUCTO POR ID
+            # 1. OBTENER UN PRODUCTO POR ID (Ej: ID 7)
             # -------------------------------------------------
             print("CONSULTAR PRODUCTO")
 
             result = await session.call_tool(
                 "get_product",
-                arguments={"product_id": 1},
+                arguments={"product_id": 7},
             )
 
             if result.is_error:
@@ -140,11 +145,12 @@ async def consumir_mcp_productos():
 
 # Ejecutar en JupyterLab
 await consumir_mcp_productos()
-```
-
-### 3\. Crear un producto mediante MCP
 
 ```
+
+### 3. Crear un producto mediante MCP
+
+```python
 import json
 from mcp.client.streamable_http import streamable_http_client
 from mcp.client.session import ClientSession
@@ -184,14 +190,16 @@ async def crear_producto_mcp():
 
 # Ejecutar en JupyterLab
 await crear_producto_mcp()
+
 ```
 
-### 4\. Crear un producto mediante la API REST
-```
+### 4. Crear un producto mediante la API REST (Ruta estandarizada `POST /products`)
+
+```python
 import httpx
 
 response = httpx.post(
-    "https://productos-mcp.onrender.com/products/create_product",
+    "https://productos-mcp.onrender.com/products",
     json={
         "name": "AI Assistant Subscription – Professional",
         "price": 24.99,
@@ -202,40 +210,44 @@ response = httpx.post(
 
 print("Estado:", response.status_code)
 print("Resultado:", response.json())
+
 ```
 
-### 5\. Consultar un producto mediante la API REST
-```
+### 5. Consultar un producto mediante la API REST (Ruta RESTful `GET /products/{product_id}`)
+
+Ejemplo consultando el producto **13**:
+
+```python
 import requests
 
 BASE_URL = "https://productos-mcp.onrender.com"
 
-# Probar endpoint REST /products/get_product
-response = requests.get(
-    f"{BASE_URL}/products/get_product",
-    params={"product_id": 13},
-)
+# Consultar endpoint REST /products/{product_id}
+response = requests.get(f"{BASE_URL}/products/13")
 
 print("Status Code:", response.status_code)
 print("Respuesta REST:", response.json())
+
 ```
+
+---
 
 ## 🔎 Ejemplos de Filtrado REST
 
 ### Filtrar por categoría
 
-```
+```python
 import json
 import requests
 
 BASE_URL = "https://productos-mcp.onrender.com"
 
 response = requests.get(
-    f"{BASE_URL}/products/list_products",
+    f"{BASE_URL}/products",
     params={"category": "Electronics"},
 )
 
-print("🛍️  CATÁLOGO DE PRODUCTOS")
+print("🛍️ CATÁLOGO DE PRODUCTOS")
 print("=" * 50)
 print(f"📡 Estado HTTP: {response.status_code}")
 print("📂 Categoría: Electronics")
@@ -247,10 +259,10 @@ if response.ok:
     if productos:
         for producto in productos:
             print(f"\n📦 Producto #{producto['id']}")
-            print(f"   🏷️  Nombre:       {producto['name']}")
-            print(f"   💰 Precio:       ${producto['price']:,.2f}")
-            print(f"   📂 Categoría:    {producto['category']}")
-            print(f"   📝 Descripción:  {producto.get('description') or 'Sin descripción'}")
+            print(f"    🏷️ Nombre:       {producto['name']}")
+            print(f"    💰 Precio:       ${producto['price']:,.2f}")
+            print(f"    📂 Categoría:    {producto['category']}")
+            print(f"    📝 Descripción:  {producto.get('description') or 'Sin descripción'}")
             print("-" * 50)
 
         print(f"\n✅ Total de productos encontrados: {len(productos)}")
@@ -259,21 +271,22 @@ if response.ok:
 else:
     print("❌ Error al consultar la API:")
     print(json.dumps(response.json(), indent=2, ensure_ascii=False))
+
 ```
 
 ### Filtrar por precio máximo
 
-```
+```python
 import requests
 
 BASE_URL = "https://productos-mcp.onrender.com"
 
 response = requests.get(
-    f"{BASE_URL}/products/list_products",
+    f"{BASE_URL}/products",
     params={"max_price": 100.0},
 )
 
-print("🛍️  CATÁLOGO DE PRODUCTOS")
+print("🛍️ CATÁLOGO DE PRODUCTOS")
 print("=" * 55)
 print(f"📡 Estado HTTP: {response.status_code}")
 print("💰 Filtro: Precio máximo de $100.00")
@@ -285,11 +298,11 @@ if response.ok:
     if productos:
         for producto in productos:
             print(f"\n📦 Producto #{producto['id']}")
-            print(f"   🏷️  Nombre:      {producto['name']}")
-            print(f"   💵 Precio:      ${producto['price']:,.2f}")
-            print(f"   📂 Categoría:   {producto['category']}")
+            print(f"    🏷️ Nombre:      {producto['name']}")
+            print(f"    💵 Precio:      ${producto['price']:,.2f}")
+            print(f"    📂 Categoría:    {producto['category']}")
             print(
-                f"   📝 Descripción: "
+                f"    📝 Descripción: "
                 f"{producto.get('description') or 'Sin descripción'}"
             )
             print("-" * 55)
@@ -303,41 +316,34 @@ else:
         print(response.json())
     except requests.exceptions.JSONDecodeError:
         print(response.text)
+
 ```
 
 ---
 
 ## ⚠️ Consideraciones
 
-- **Almacenamiento en memoria**: Los productos creados, actualizados o eliminados se mantienen únicamente durante la vida del proceso del servidor. Un reinicio puede restaurar el catálogo inicial.
-- **Identificadores automáticos**: El ID de un producto nuevo se asigna automáticamente. Utiliza el ID devuelto por la operación de creación para consultarlo o actualizarlo.
-- **Validación estricta**: Los modelos Pydantic aplican restricciones de tipos y campos. Las solicitudes que no cumplan el esquema pueden devolver `422 Unprocessable Entity`.
-- **Errores REST**: Los productos inexistentes generan `404 Not Found`; los errores de la lógica de negocio generan `400 Bad Request`.
-- **Actualización parcial**: `PATCH /products/update_product` recibe el `product_id` y los campos que se desean actualizar.
-- **Despliegue**: El servicio utiliza la variable de entorno `PORT` y puede ejecutarse en plataformas como Render.
+* **Almacenamiento en memoria**: Los productos creados, actualizados o eliminados se mantienen únicamente durante la vida del proceso del servidor. Un reinicio puede restaurar el catálogo inicial (el cual incluye elementos clave como el producto **7** y el producto **13**).
+* **Identificadores automáticos**: El ID de un producto nuevo se asigna automáticamente. Utiliza el ID devuelto por la operación de creación para consultarlo o actualizarlo.
+* **Validación estricta**: Los modelos Pydantic aplican restricciones de tipos y campos. Las solicitudes que no cumplan el esquema pueden devolver `422 Unprocessable Entity`.
+* **Errores REST**: Los productos inexistentes generan `404 Not Found`; los errores de la lógica de negocio generan `400 Bad Request`.
+* **Actualización parcial**: `PATCH /products/{product_id}` recibe el identificador en la ruta y los campos opcionales que se desean modificar.
+* **Despliegue**: El servicio utiliza la variable de entorno `PORT` y puede ejecutarse en plataformas como Render.
 
 ---
 
 ## 🧰 Tecnologías Utilizadas
 
-- **FastAPI**: API REST y documentación OpenAPI.
-- **FastMCP**: Registro y exposición de herramientas MCP.
-- **Pydantic**: Validación de datos.
-- **Typeguard**: Comprobación de tipos durante la ejecución.
-- **Uvicorn**: Servidor ASGI.
-- **Requests / HTTPX**: Consumo de endpoints REST.
-- **MCP Python SDK**: Conexión al servidor MCP desde Python y JupyterLab.
+* **FastAPI**: API REST y documentación OpenAPI.
+* **FastMCP**: Registro y exposición de herramientas MCP.
+* **Pydantic**: Validación de datos.
+* **Typeguard**: Comprobación de tipos durante la ejecución.
+* **Uvicorn**: Servidor ASGI.
+* **Requests / HTTPX**: Consumo de endpoints REST.
+* **MCP Python SDK**: Conexión al servidor MCP desde Python y JupyterLab.
 
 ---
 
 ## 📌 Resumen
 
-**Productos API WEB MCP** permite listar, consultar, crear, actualizar y eliminar productos mediante dos interfaces: REST y MCP. Ambas comparten la lógica de negocio y el almacenamiento en memoria, permitiendo integrar el catálogo con aplicaciones web, programas Python y asistentes de inteligencia artificial.
-
-Correcciones importantes incluidas:
-
-- `tool.input_schema` para mostrar los argumentos de las herramientas.
-- `result.is_error` para comprobar errores al invocar herramientas MCP.
-- Ejemplos independientes para listar herramientas, consumir MCP, crear productos y utilizar REST.
-
-Los endpoints y nombres corresponden al código `main.py` que compartiste.
+**Productos API WEB MCP** permite listar, consultar, crear, actualizar y eliminar productos mediante dos interfaces alineadas con los mejores estándares: una API RESTful limpia y un servidor MCP. Ambas comparten la lógica de negocio y el almacenamiento en memoria, permitiendo integrar el catálogo con aplicaciones web, programas Python y asistentes de inteligencia artificial.
