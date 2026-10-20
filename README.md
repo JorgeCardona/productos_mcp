@@ -224,8 +224,6 @@ print("Status Code:", response.status_code)
 print("Respuesta REST:", response.json())
 ```
 
----
-
 ## 🔎 Ejemplos de Filtrado REST
 
 ### Filtrar por categoría
@@ -309,7 +307,7 @@ else:
         print(response.json())
     except requests.exceptions.JSONDecodeError:
         print(response.text)
----
+```
 
 ---
 
