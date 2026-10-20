@@ -8,7 +8,7 @@ import math
 import os
 from contextlib import asynccontextmanager
 from functools import wraps
-from typing import Optional
+from typing import Optional, TypedDict
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -67,7 +67,7 @@ def registrar_llamada(origen: str, nombre: str):
 
 
 # =========================================================
-# MODELOS
+# MODELOS Y TYPEDICTS
 # =========================================================
 
 class Product(BaseModel):
@@ -104,6 +104,12 @@ class ProductUpdate(BaseModel):
         max_length=100,
     )
     description: Optional[str] = Field(default=None, max_length=2000)
+
+
+class DeleteResult(TypedDict):
+    message: str
+    product_id: int
+    name: str
 
 
 # =========================================================
@@ -264,33 +270,47 @@ def actualizar_producto(
     category: Optional[str] = None,
     description: Optional[str] = None,
 ) -> Product:
-    producto = obtener_producto(product_id)
+    producto_actual = obtener_producto(product_id)
 
+    # Validar y preparar los nuevos valores antes de mutar nada
+    nuevo_nombre = producto_actual.name
     if name is not None:
         name = name.strip()
         if not name:
             raise ValueError("El nombre no puede estar vacío.")
-        producto.name = name
+        nuevo_nombre = name
 
+    nuevo_precio = producto_actual.price
     if price is not None:
         if not math.isfinite(price) or price < 0:
             raise ValueError("El precio debe ser finito y no negativo.")
-        producto.price = price
+        nuevo_precio = price
 
+    nueva_categoria = producto_actual.category
     if category is not None:
         category = category.strip()
         if not category:
             raise ValueError("La categoría no puede estar vacía.")
-        producto.category = category
+        nueva_categoria = category
 
-    if description is not None:
-        producto.description = description
+    nueva_descripcion = producto_actual.description if description is None else description
 
-    return producto
+    # Actualización atómica segura usando model_copy para evitar corrupción parcial
+    producto_actualizado = producto_actual.model_copy(
+        update={
+            "name": nuevo_nombre,
+            "price": nuevo_precio,
+            "category": nueva_categoria,
+            "description": nueva_descripcion,
+        }
+    )
+
+    products_db[product_id] = producto_actualizado
+    return producto_actualizado
 
 
 @typechecked
-def eliminar_producto(product_id: int) -> dict:
+def eliminar_producto(product_id: int) -> DeleteResult:
     producto = products_db.pop(product_id, None)
 
     if producto is None:
@@ -402,7 +422,7 @@ def tool_update_product(
 )
 @typechecked
 @registrar_llamada("MCP", "delete_product")
-def tool_delete_product(product_id: int) -> dict:
+def tool_delete_product(product_id: int) -> DeleteResult:
     return eliminar_producto(product_id)
 
 
@@ -503,7 +523,7 @@ def rest_update_product(product_id: int, update: ProductUpdate):
 
 @app.delete(
     "/products/{product_id}",
-    response_model=dict,
+    response_model=DeleteResult,
     operation_id="rest_delete_product",
     tags=["Products"],
 )
