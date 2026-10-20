@@ -1,4 +1,3 @@
-
 # main.py
 # API REST + MCP
 # REST: https://productos-mcp.onrender.com/docs
@@ -93,7 +92,6 @@ class ProductCreate(BaseModel):
 class ProductUpdate(BaseModel):
     model_config = ConfigDict(strict=True)
 
-    product_id: int = Field(gt=0)
     name: Optional[str] = Field(default=None, min_length=1, max_length=200)
     price: Optional[float] = Field(
         default=None,
@@ -306,8 +304,11 @@ def eliminar_producto(product_id: int) -> dict:
 
 
 # =========================================================
-# METADATOS MCP
+# SERVIDOR MCP Y HERRAMIENTAS NATIVAS
 # =========================================================
+
+mcp = FastMCP("Productos")
+
 
 def anotaciones(
     titulo: str,
@@ -324,49 +325,14 @@ def anotaciones(
     )
 
 
-def registrar_tool(
-    nombre: str,
-    descripcion: str,
-    *,
-    solo_lectura: bool,
-    idempotente: bool,
-):
-    def decorador(func):
-        func = typechecked(func)
-        func = registrar_llamada("MCP", nombre)(func)
-
-        return mcp.tool(
-            name=nombre,
-            description=descripcion,
-            annotations=anotaciones(
-                nombre.replace("_", " ").capitalize(),
-                solo_lectura=solo_lectura,
-                idempotente=idempotente,
-            ),
-            meta={
-                "service": "productos",
-                "version": VERSION,
-                "category": "catalogo",
-                "tool": nombre,
-            },
-        )(func)
-
-    return decorador
-
-
-# =========================================================
-# SERVIDOR MCP
-# =========================================================
-
-mcp = FastMCP("Productos")
-
-
-@registrar_tool(
-    "list_products",
-    "Lista los productos. Permite filtrar por categoría y precio máximo.",
-    solo_lectura=True,
-    idempotente=True,
+@mcp.tool(
+    name="list_products",
+    description="Lista los productos. Permite filtrar por categoría y precio máximo.",
+    annotations=anotaciones("List products", solo_lectura=True, idempotente=True),
+    meta={"service": "productos", "version": VERSION, "category": "catalogo", "tool": "list_products"}
 )
+@typechecked
+@registrar_llamada("MCP", "list_products")
 def tool_list_products(
     category: Optional[str] = None,
     max_price: Optional[float] = None,
@@ -377,22 +343,26 @@ def tool_list_products(
     ]
 
 
-@registrar_tool(
-    "get_product",
-    "Obtiene un producto por su ID.",
-    solo_lectura=True,
-    idempotente=True,
+@mcp.tool(
+    name="get_product",
+    description="Obtiene un producto por su ID.",
+    annotations=anotaciones("Get product", solo_lectura=True, idempotente=True),
+    meta={"service": "productos", "version": VERSION, "category": "catalogo", "tool": "get_product"}
 )
+@typechecked
+@registrar_llamada("MCP", "get_product")
 def tool_get_product(product_id: int) -> dict:
     return obtener_producto(product_id).model_dump()
 
 
-@registrar_tool(
-    "create_product",
-    "Crea un producto y asigna un ID automáticamente.",
-    solo_lectura=False,
-    idempotente=False,
+@mcp.tool(
+    name="create_product",
+    description="Crea un producto y asigna un ID automáticamente.",
+    annotations=anotaciones("Create product", solo_lectura=False, idempotente=False),
+    meta={"service": "productos", "version": VERSION, "category": "catalogo", "tool": "create_product"}
 )
+@typechecked
+@registrar_llamada("MCP", "create_product")
 def tool_create_product(
     name: str,
     price: float,
@@ -404,12 +374,14 @@ def tool_create_product(
     ).model_dump()
 
 
-@registrar_tool(
-    "update_product",
-    "Actualiza los campos proporcionados de un producto existente.",
-    solo_lectura=False,
-    idempotente=True,
+@mcp.tool(
+    name="update_product",
+    description="Actualiza los campos proporcionados de un producto existente.",
+    annotations=anotaciones("Update product", solo_lectura=False, idempotente=True),
+    meta={"service": "productos", "version": VERSION, "category": "catalogo", "tool": "update_product"}
 )
+@typechecked
+@registrar_llamada("MCP", "update_product")
 def tool_update_product(
     product_id: int,
     name: Optional[str] = None,
@@ -422,12 +394,14 @@ def tool_update_product(
     ).model_dump()
 
 
-@registrar_tool(
-    "delete_product",
-    "Elimina un producto existente por su ID.",
-    solo_lectura=False,
-    idempotente=True,
+@mcp.tool(
+    name="delete_product",
+    description="Elimina un producto existente por su ID.",
+    annotations=anotaciones("Delete product", solo_lectura=False, idempotente=True),
+    meta={"service": "productos", "version": VERSION, "category": "catalogo", "tool": "delete_product"}
 )
+@typechecked
+@registrar_llamada("MCP", "delete_product")
 def tool_delete_product(product_id: int) -> dict:
     return eliminar_producto(product_id)
 
@@ -454,7 +428,7 @@ app = FastAPI(
 
 
 # =========================================================
-# ENDPOINTS REST
+# ENDPOINTS REST (ESTÁNDARES REST)
 # =========================================================
 
 def ejecutar_rest(func, *args):
@@ -467,7 +441,7 @@ def ejecutar_rest(func, *args):
 
 
 @app.get(
-    "/products/list_products",
+    "/products",
     response_model=list[Product],
     operation_id="rest_list_products",
     tags=["Products"],
@@ -481,7 +455,7 @@ def rest_list_products(
 
 
 @app.get(
-    "/products/get_product",
+    "/products/{product_id}",
     response_model=Product,
     operation_id="rest_get_product",
     tags=["Products"],
@@ -492,10 +466,11 @@ def rest_get_product(product_id: int):
 
 
 @app.post(
-    "/products/create_product",
+    "/products",
     response_model=Product,
     operation_id="rest_create_product",
     tags=["Products"],
+    status_code=201,
 )
 @registrar_llamada("REST", "create_product")
 def rest_create_product(product: ProductCreate):
@@ -509,16 +484,16 @@ def rest_create_product(product: ProductCreate):
 
 
 @app.patch(
-    "/products/update_product",
+    "/products/{product_id}",
     response_model=Product,
     operation_id="rest_update_product",
     tags=["Products"],
 )
 @registrar_llamada("REST", "update_product")
-def rest_update_product(update: ProductUpdate):
+def rest_update_product(product_id: int, update: ProductUpdate):
     return ejecutar_rest(
         actualizar_producto,
-        update.product_id,
+        product_id,
         update.name,
         update.price,
         update.category,
@@ -527,7 +502,7 @@ def rest_update_product(update: ProductUpdate):
 
 
 @app.delete(
-    "/products/delete_product",
+    "/products/{product_id}",
     response_model=dict,
     operation_id="rest_delete_product",
     tags=["Products"],
