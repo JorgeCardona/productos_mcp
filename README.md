@@ -1,7 +1,3 @@
-Aquí tienes la documentación completa y actualizada de Productos API WEB MCP, conservando la misma estructura del README de la calculadora y corrigiendo los atributos del SDK de MCP para tu entorno: `tool.input_schema` y `result.is_error`.
-
-Writing
-
 # Productos API WEB MCP 📦
 
 Microservicio de gestión de productos híbrido construido con **FastAPI** y **FastMCP** (Model Context Protocol). Proporciona tanto una **API REST** para integración web estándar como un servidor **MCP** con transporte HTTP para asistentes de IA y consumo programático desde entornos como JupyterLab.
